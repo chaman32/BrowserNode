@@ -1,17 +1,24 @@
+const { contextBridge, ipcRenderer } = require("electron");
 
-
-window.addEventListener('DOMContentLoaded', () => {
-  console.log('DOM fully loaded and parsed');
+window.addEventListener("DOMContentLoaded", () => {
+  console.log("DOM fully loaded and parsed");
 });
 
-const { contextBridge, ipcRenderer } = require('electron');
+// const { contextBridge, ipcRenderer } = require('electron');
 
-contextBridge.exposeInMainWorld('electronAPI', {
-  sendURL: (url) => ipcRenderer.send('url:parse', url),
-  onParsed: (callback) => ipcRenderer.on('url:parsed', (event, data) => callback(data)),
-  doThing: () => ipcRenderer.send('do-a-thing')
+// contextBridge.exposeInMainWorld('electronAPI', {
+//   sendURL: (url) => ipcRenderer.send('url:parse', url),
+//   onParsed: (callback) => ipcRenderer.on('url:parsed', (event, data) => callback(data)),
+//   doThing: () => ipcRenderer.send('do-a-thing')
+// });
+
+// Expose protected methods that allow the renderer process to use
+// the ipcRenderer without exposing the entire object
+contextBridge.exposeInMainWorld("electronAPI", {
+  sendMessage: (message) => ipcRenderer.send("message", message),
+  receiveMessage: (callback) =>
+    ipcRenderer.on("message-reply", (event, ...args) => callback(...args)),
 });
-
 
 // This code uses Electron's contextBridge to expose a safe API to the renderer process.
 // It allows the renderer process to send a URL to the main process for parsing and receive the parsed data back.
@@ -29,5 +36,3 @@ contextBridge.exposeInMainWorld('electronAPI', {
 // The `url:parse` event is sent from the renderer process to the main process with the URL to be parsed.
 // The `url:parsed` event is sent back from the main process to the renderer process with the parsed data.
 // This two-way communication allows for a responsive and interactive user experience in Electron applications.
-
-
